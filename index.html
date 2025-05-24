@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>祝花受付コスト診断</title>
+    <!-- Tailwind CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+    <!-- Alpine.js for reactive bindings (軽量) -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <style>
+      /* iframe で埋め込む前提：余白ゼロ＆背景透過も可能に */
+      html,body{margin:0;padding:0;background:transparent}
+    </style>
+  </head>
+  <body x-data="diagnostic()" class="font-sans text-gray-800">
+    <main class="max-w-xl mx-auto bg-white shadow-xl rounded-2xl p-8 space-y-8">
+      <h1 class="text-2xl font-bold text-center">祝花受付コスト<br class="sm:hidden" />診断フォーム</h1>
+
+      <!-- イベント種別 -->
+      <div>
+        <label class="block font-semibold mb-2" for="eventType">イベント種別</label>
+        <select id="eventType" x-model="eventType" class="w-full rounded-lg border-gray-300 focus:ring-indigo-500">
+          <option value="展示会">展示会</option>
+          <option value="ライブ/コンサート">ライブ/コンサート</option>
+          <option value="開店セレモニー">開店セレモニー</option>
+          <option value="社内式典">社内式典</option>
+          <option value="その他">その他</option>
+        </select>
+      </div>
+
+      <!-- 年間件数 -->
+      <div>
+        <label class="block font-semibold mb-2" for="annualEvents">年間開催件数：<span class="text-indigo-600 font-bold" x-text="annualEvents"></span> 件</label>
+        <input type="range" id="annualEvents" min="1" max="50" step="1" x-model.number="annualEvents" class="w-full" />
+      </div>
+
+      <!-- 平均届く花数 -->
+      <div>
+        <label class="block font-semibold mb-2" for="avgFlowers">平均届く花数：<span class="text-indigo-600 font-bold" x-text="avgFlowers"></span> 基</label>
+        <input type="range" id="avgFlowers" min="1" max="200" step="1" x-model.number="avgFlowers" class="w-full" />
+      </div>
+
+      <!-- 担当者時給 -->
+      <div>
+        <label class="block font-semibold mb-2" for="hourlyWage">担当者時給：<span class="text-indigo-600 font-bold" x-text="hourlyWage.toLocaleString()"></span> 円</label>
+        <input type="range" id="hourlyWage" min="1000" max="5000" step="100" x-model.number="hourlyWage" class="w-full" />
+      </div>
+
+      <!-- 診断ボタン -->
+      <button @click="calculate()" class="w-full bg-indigo-600 text-white py-3 rounded-xl font-semibold hover:bg-indigo-700 transition">診断する</button>
+
+      <!-- 結果表示 -->
+      <template x-if="showResult">
+        <div class="bg-gray-100 p-6 rounded-xl space-y-3 mt-4">
+          <h2 class="text-xl font-bold text-indigo-700">診断結果</h2>
+          <p>年間電話応対時間：<span class="font-semibold" x-text="hours.toFixed(1)"></span> 時間</p>
+          <p>年間人件費コスト：<span class="font-semibold" x-text="cost.toLocaleString()"></span> 円</p>
+          <p class="text-sm text-gray-600">※1件あたり平均3分の電話応対で試算</p>
+        </div>
+      </template>
+    </main>
+
+    <script>
+      /* --------------------------------------------------
+         iframe ➡ 親への高さ通知用ユーティリティ
+      --------------------------------------------------*/
+      function postHeight() {
+        if (window.parent !== window) {
+          const height = document.body.scrollHeight;
+          window.parent.postMessage({ type: 'FLOWER_GATE_HEIGHT', height }, '*');
+        }
+      }
+      // ResizeObserver で高さ変化を監視
+      new ResizeObserver(postHeight).observe(document.body);
+
+      /* --------------------------------------------------
+         Alpine.js 本体
+      --------------------------------------------------*/
+      function diagnostic() {
+        return {
+          // フォームデータ
+          eventType: '展示会',
+          annualEvents: 10,
+          avgFlowers: 30,
+          hourlyWage: 1500,
+
+          // 結果
+          hours: 0,
+          cost: 0,
+          showResult: false,
+
+          // 計算ロジック
+          calculate() {
+            const totalMinutes = this.annualEvents * this.avgFlowers * 3; // 3分/本
+            this.hours = totalMinutes / 60;
+            this.cost = Math.round(this.hours * this.hourlyWage);
+            this.showResult = true;
+            this.$nextTick(() => postHeight()); // 結果表示後に高さ再計測
+          },
+        };
+      }
+
+      // 初回ロード時に親へ高さ送信
+      window.addEventListener('DOMContentLoaded', postHeight);
+    </script>
+  </body>
+</html>
