@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>抽選ページ</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      margin-top: 50px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 1.2em;
+      cursor: pointer;
+    }
+    #result {
+      margin-top: 30px;
+      font-size: 2em;
+      color: #007bff;
+    }
+    #log {
+      margin-top: 40px;
+      font-size: 1.2em;
+    }
+    table {
+      margin: 0 auto;
+      border-collapse: collapse;
+    }
+    th, td {
+      padding: 8px 16px;
+      border: 1px solid #ccc;
+    }
+    #summary {
+      margin-top: 20px;
+      font-size: 1.2em;
+    }
+  </style>
+</head>
+<body>
+  <h1>抽選ガチャ</h1>
+  <button onclick="drawPrize()">ボタンを押して抽選！</button>
+  <div id="result"></div>
+
+  <div id="log">
+    <h2>当選回数と賞金</h2>
+    <table>
+      <tr><th>賞</th><th>回数</th><th>金額</th></tr>
+      <tr><td>S賞</td><td id="count-s">0</td><td id="amount-s">0</td></tr>
+      <tr><td>A賞</td><td id="count-a">0</td><td id="amount-a">0</td></tr>
+      <tr><td>B賞</td><td id="count-b">0</td><td id="amount-b">0</td></tr>
+      <tr><td>C賞</td><td id="count-c">0</td><td id="amount-c">0</td></tr>
+      <tr><td>D賞</td><td id="count-d">0</td><td id="amount-d">0</td></tr>
+      <tr><td>E賞</td><td id="count-e">0</td><td id="amount-e">0</td></tr>
+    </table>
+    <div id="summary">
+      <p>総回数: <span id="total-count">0</span> 回</p>
+      <p>累計金額: <span id="total-cost">0</span> 円</p>
+    </div>
+  </div>
+
+  <script>
+    const counts = {
+      s: 0,
+      a: 0,
+      b: 0,
+      c: 0,
+      d: 0,
+      e: 0
+    };
+    let total = 0;
+
+    function drawPrize() {
+      const rand = Math.random() * 100;
+      let prize = '';
+
+      if (rand < 5) {
+        prize = '🎉 S賞 当選！';
+        counts.s++;
+      } else if (rand < 15) {
+        prize = '🥇 A賞 当選！';
+        counts.a++;
+      } else if (rand < 27) {
+        prize = '🥈 B賞 当選！';
+        counts.b++;
+      } else if (rand < 45) {
+        prize = '🥉 C賞 当選！';
+        counts.c++;
+      } else if (rand < 68) {
+        prize = '🏅 D賞 当選！';
+        counts.d++;
+      } else {
+        prize = '🎁 E賞 当選！';
+        counts.e++;
+      }
+
+      total++;
+      document.getElementById('result').textContent = prize;
+      updateCounts();
+    }
+
+    function updateCounts() {
+      document.getElementById('count-s').textContent = counts.s;
+      document.getElementById('count-a').textContent = counts.a;
+      document.getElementById('count-b').textContent = counts.b;
+      document.getElementById('count-c').textContent = counts.c;
+      document.getElementById('count-d').textContent = counts.d;
+      document.getElementById('count-e').textContent = counts.e;
+
+      document.getElementById('amount-s').textContent = counts.s * 1000;
+      document.getElementById('amount-a').textContent = counts.a * 1000;
+      document.getElementById('amount-b').textContent = counts.b * 1000;
+      document.getElementById('amount-c').textContent = counts.c * 1000;
+      document.getElementById('amount-d').textContent = counts.d * 1000;
+      document.getElementById('amount-e').textContent = counts.e * 1000;
+
+      document.getElementById('total-count').textContent = total;
+      document.getElementById('total-cost').textContent = total * 1000;
+    }
+  </script>
+</body>
+</html>
